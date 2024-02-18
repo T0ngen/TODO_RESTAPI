@@ -2,10 +2,10 @@ package main
 
 import (
 	"TodoRESTAPI/internal/config"
+	"TodoRESTAPI/internal/http-server/handlers/tasks"
 	"TodoRESTAPI/internal/http-server/middlewareauth"
 	"TodoRESTAPI/internal/storage/postgresql"
-	"fmt"
-	"io"
+	
 	"net/http"
 	"os"
 
@@ -20,7 +20,6 @@ import (
 
 func main(){
 	cfg := config.MustLoad()
-	fmt.Println(cfg)
 	log.Println("starting TODO")
 	storage, err :=postgresql.New()
 	if err != nil{
@@ -35,9 +34,9 @@ func main(){
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
 	log.Println("starting server", cfg.Address)
-	router.Route("/url", func(r chi.Router) {
+	router.Route("/tasks", func(r chi.Router) {
 		r.Use((middlewareauth.BasicAuthFromDB(storage)))
-		r.Get("/", HomePage)
+		r.Get("/", tasks.New(storage))
 		// TODO: add DELETE /url/{id}
 	})
 
@@ -54,7 +53,4 @@ func main(){
 		log.Fatal("failed to start server")
 		os.Exit(1)
 	}
-}
-func HomePage(w http.ResponseWriter, r *http.Request){
-	io.WriteString(w,"HEllo")
 }

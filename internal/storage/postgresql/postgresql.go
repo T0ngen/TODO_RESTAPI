@@ -3,7 +3,9 @@ package postgresql
 import (
 	"database/sql"
 	"fmt"
-	_"github.com/lib/pq"
+
+	_ "github.com/lib/pq"
+	
 )
 
 
@@ -19,6 +21,13 @@ const (
 
 type Storage struct {
 	db *sql.DB
+}
+
+
+type Task struct {
+	Id int `json:"id"`
+	Text string `json:"text"`
+	Importance int `json:"importance"`
 }
 
 func New() (*Storage, error) {
@@ -68,6 +77,46 @@ func New() (*Storage, error) {
 	return &Storage{db: db}, nil
 
 }
+
+
+
+
+func (s *Storage) CheckAllUserTasks(username string) ([]Task, error) {
+	const op = "storage.postgresql.CheckAllUserTasks"
+   
+	query := `SELECT id, note, importance FROM notes WHERE username=$1`
+	stmt, err := s.db.Prepare(query)
+	if err != nil {
+	 return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	defer stmt.Close()
+   
+	rows, err := stmt.Query(username)
+	if err != nil {
+	 return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	defer rows.Close()
+   
+	tasks := []Task{}
+	for rows.Next() {
+	 var id int
+	 var note string
+	 var importance int
+	 if err := rows.Scan(&id, &note, &importance); err != nil {
+	  return nil, fmt.Errorf("%s: %w", op, err)
+	 }
+	 task := Task{id, note, importance}
+	 tasks = append(tasks, task)
+	}
+   
+	if err := rows.Err(); err != nil {
+	 return nil, fmt.Errorf("%s: %w", op, err)
+	}
+   
+	return tasks, nil
+   }
+   
+
 
 func (s *Storage) CheckUserInDb(username string, password string) (bool, error) {
 	const op = "storage.postgresql.CheckUserInDb"
