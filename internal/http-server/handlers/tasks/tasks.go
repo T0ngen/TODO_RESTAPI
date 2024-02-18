@@ -16,7 +16,7 @@ type AllTasksk interface{
 }
 
 
-func New(allTasks AllTasksk)http.HandlerFunc {
+func All(allTasks AllTasksk)http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		username, _, _ := r.BasicAuth()
 		allTasks,err  :=allTasks.CheckAllUserTasks(username)

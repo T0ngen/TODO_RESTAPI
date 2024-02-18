@@ -2,10 +2,11 @@ package main
 
 import (
 	"TodoRESTAPI/internal/config"
+	"TodoRESTAPI/internal/http-server/handlers/taskbyid"
 	"TodoRESTAPI/internal/http-server/handlers/tasks"
 	"TodoRESTAPI/internal/http-server/middlewareauth"
 	"TodoRESTAPI/internal/storage/postgresql"
-	
+
 	"net/http"
 	"os"
 
@@ -29,14 +30,17 @@ func main(){
 	log.Println("init STORAGE")
 	_ = storage
 	router := chi.NewRouter()
-
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.URLFormat)
 	log.Println("starting server", cfg.Address)
 	router.Route("/tasks", func(r chi.Router) {
 		r.Use((middlewareauth.BasicAuthFromDB(storage)))
-		r.Get("/", tasks.New(storage))
+		r.Get("/{id}", taskbyid.ById(storage))
+		r.Get("/", tasks.All(storage))
+		
 		// TODO: add DELETE /url/{id}
 	})
 

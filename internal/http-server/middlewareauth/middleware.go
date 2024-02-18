@@ -1,7 +1,7 @@
 package middlewareauth
 
 import (
-	"fmt"
+	
 	"log"
 	"net/http"
 )
@@ -22,7 +22,7 @@ func BasicAuthFromDB(auth AuthUser)func(next http.Handler) http.Handler {
 		username, password, _ := r.BasicAuth()
 		
 		ok, err :=auth.CheckUserInDb(username, password)
-		fmt.Println(ok)
+		
 		if err != nil{
 			log.Printf("Error: %v", err) 
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)

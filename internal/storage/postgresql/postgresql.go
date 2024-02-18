@@ -1,11 +1,11 @@
 package postgresql
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
 	_ "github.com/lib/pq"
-	
 )
 
 
@@ -27,6 +27,11 @@ type Storage struct {
 type Task struct {
 	Id int `json:"id"`
 	Text string `json:"text"`
+	Importance int `json:"importance"`
+}
+
+type TaskById struct{
+	Note string `json:"note"`
 	Importance int `json:"importance"`
 }
 
@@ -115,7 +120,28 @@ func (s *Storage) CheckAllUserTasks(username string) ([]Task, error) {
    
 	return tasks, nil
    }
-   
+
+
+func (s *Storage) CheckTaskById(username string, id string) (*TaskById, error) {
+    const op = "storage.postgresql.CheckTaskById"
+
+    query := "SELECT note, importance FROM notes WHERE username=$1 AND id=$2"
+    stmt, err := s.db.Prepare(query)
+    if err != nil {
+        return nil, fmt.Errorf("%s: %w", op, err)
+    }
+    defer stmt.Close()
+
+    var task TaskById
+    err = stmt.QueryRowContext(context.Background(), username, id).Scan(&task.Note, &task.Importance)
+    if err != nil {
+        return nil, fmt.Errorf("%s: %w", op, err)
+    }
+
+    
+    return &task, nil
+}
+
 
 
 func (s *Storage) CheckUserInDb(username string, password string) (bool, error) {
