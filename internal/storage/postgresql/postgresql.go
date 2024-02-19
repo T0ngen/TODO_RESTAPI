@@ -210,6 +210,22 @@ func (s *Storage) DeleteTaskById(username string, id string) (bool, error){
 	return true, nil
 }
 
+func (s *Storage) UpdateTask(username string, id string, note string, importance int) (bool, error){
+	const op = "storage.postgresql.UpdateTask"
+
+
+	query := `UPDATE notes SET note = $1, importance = $2 WHERE username = $3 AND id = $4`
+	stmt, err := s.db.Prepare(query)
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	   }
+	_, err = stmt.Exec(note, importance, username, id)
+	if err != nil {
+	return false, fmt.Errorf("%s: %w", op, err)
+	}
+	return true, nil
+}
+
 
 func (s *Storage) CheckUserInDb(username string, password string) (bool, error) {
 	const op = "storage.postgresql.CheckUserInDb"

@@ -7,6 +7,7 @@ import (
 	"TodoRESTAPI/internal/http-server/handlers/registration"
 	"TodoRESTAPI/internal/http-server/handlers/taskbyid"
 	"TodoRESTAPI/internal/http-server/handlers/tasks"
+	"TodoRESTAPI/internal/http-server/handlers/updatetask"
 	"TodoRESTAPI/internal/http-server/middlewareauth"
 	"TodoRESTAPI/internal/storage/postgresql"
 
@@ -42,6 +43,7 @@ func main(){
 	router.Route("/", func(r chi.Router) {
 		r.Use((middlewareauth.BasicAuthFromDB(storage)))
 		r.Delete("/tasks/{id}", deletetask.New(storage))
+		r.Put("/tasks/{id}", updatetask.New(storage))
 		r.Post("/tasks", addtask.New(storage))
 		r.Get("/tasks/{id}", taskbyid.ById(storage))
 		r.Get("/tasks", tasks.All(storage))

@@ -7,3 +7,5 @@ DELETE /notes/id       delete note by id
 POST /notes     create new task  {"note":"Make a film", "importance":1}
 
 POST /registration  create account {"username":"qwerty", "password":"qwerty123"}
+
+PUT /notes/id   {"note":"Make a film", "importance":1}
