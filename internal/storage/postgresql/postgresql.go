@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	
 
 	_ "github.com/lib/pq"
+	
 )
 
 
@@ -143,6 +143,56 @@ func (s *Storage) CheckTaskById(username string, id string) (*TaskById, error) {
     return &task, nil
 }
 
+func (s *Storage) AddNewTask(username string, note string, importance int)(bool, error){
+	const op = "storage.postgresql.AddNewTask"
+
+	query := "INSERT INTO notes(note,importance,username) VALUES($1,$2,$3)"
+	stmt, err := s.db.Prepare(query)
+	if err != nil{
+		return false, fmt.Errorf("error %v", op)
+	}
+	_, err = stmt.Exec(note, importance, username)
+	if err != nil{
+		return false, fmt.Errorf("error %v", op)
+	}
+	return true, nil
+	
+}
+
+
+func (s *Storage) CreateNewUser(username string, password string) (bool, error){
+	const op = "storage.postgresql.CreateNewUser"
+
+	query := "INSERT INTO users(username, password) VALUES($1,$2)"
+	stmt, err := s.db.Prepare(query)
+	if err != nil{
+		return false, fmt.Errorf("error %v", op)
+	}
+	_, err = stmt.Exec(username, password)
+	if err != nil{
+		return false, fmt.Errorf("error %v", op)
+	}
+	return true, nil
+}
+
+func (s *Storage) CheckUsername(username string)(bool, error){
+	const op = "storage.postgresql.CheckUsername"
+
+	query := "SELECT COUNT(*) FROM users WHERE username=$1"
+	stmt, err := s.db.Prepare(query)
+	if err != nil {
+	 return false, fmt.Errorf("%s: %w", op, err)
+	}
+   
+	var count int
+	err = stmt.QueryRow(username).Scan(&count)
+	if err != nil {
+	 return false, fmt.Errorf("%s: %w", op, err)
+	}
+   
+	return count > 0, nil
+}
+
 
 func (s *Storage) DeleteTaskById(username string, id string) (bool, error){
 	const op = "storage.postgresql.DeleteTaskById"
@@ -150,7 +200,7 @@ func (s *Storage) DeleteTaskById(username string, id string) (bool, error){
 	query := `DELETE FROM notes WHERE username=$1 and id=$2`
 	stmt, err := s.db.Exec(query, username, id)
 	if err != nil{
-		return false, fmt.Errorf("Error %v", op)
+		return false, fmt.Errorf("error %v", op)
 	}
 	rowAffected, _ := stmt.RowsAffected()
 	if rowAffected == 0{

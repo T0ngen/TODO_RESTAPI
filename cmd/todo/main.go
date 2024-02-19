@@ -2,7 +2,9 @@ package main
 
 import (
 	"TodoRESTAPI/internal/config"
+	"TodoRESTAPI/internal/http-server/handlers/addtask"
 	deletetask "TodoRESTAPI/internal/http-server/handlers/delete"
+	"TodoRESTAPI/internal/http-server/handlers/registration"
 	"TodoRESTAPI/internal/http-server/handlers/taskbyid"
 	"TodoRESTAPI/internal/http-server/handlers/tasks"
 	"TodoRESTAPI/internal/http-server/middlewareauth"
@@ -40,16 +42,16 @@ func main(){
 	router.Route("/", func(r chi.Router) {
 		r.Use((middlewareauth.BasicAuthFromDB(storage)))
 		r.Delete("/tasks/{id}", deletetask.New(storage))
-		
+		r.Post("/tasks", addtask.New(storage))
 		r.Get("/tasks/{id}", taskbyid.ById(storage))
 		r.Get("/tasks", tasks.All(storage))
 		
 		
 		
-		// TODO: add DELETE /url/{id}
+		
 	})
 
-	
+	router.Post("/register", registration.New(storage))
 
 	srv := &http.Server{
 		Addr: cfg.Address,

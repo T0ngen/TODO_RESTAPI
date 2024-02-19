@@ -1,7 +1,7 @@
 package middlewareauth
 
 import (
-	
+	"TodoRESTAPI/internal/lib/response/passhash"
 	"log"
 	"net/http"
 )
@@ -20,8 +20,8 @@ func BasicAuthFromDB(auth AuthUser)func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 	  fn := func(w http.ResponseWriter, r *http.Request) {
 		username, password, _ := r.BasicAuth()
-		
-		ok, err :=auth.CheckUserInDb(username, password)
+		hashedPassword := passhash.HashedPassword(password)
+		ok, err :=auth.CheckUserInDb(username, hashedPassword)
 		
 		if err != nil{
 			log.Printf("Error: %v", err) 
