@@ -2,6 +2,7 @@ package main
 
 import (
 	"TodoRESTAPI/internal/config"
+	deletetask "TodoRESTAPI/internal/http-server/handlers/delete"
 	"TodoRESTAPI/internal/http-server/handlers/taskbyid"
 	"TodoRESTAPI/internal/http-server/handlers/tasks"
 	"TodoRESTAPI/internal/http-server/middlewareauth"
@@ -12,7 +13,7 @@ import (
 
 	"log"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
@@ -36,10 +37,14 @@ func main(){
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 	log.Println("starting server", cfg.Address)
-	router.Route("/tasks", func(r chi.Router) {
+	router.Route("/", func(r chi.Router) {
 		r.Use((middlewareauth.BasicAuthFromDB(storage)))
-		r.Get("/{id}", taskbyid.ById(storage))
-		r.Get("/", tasks.All(storage))
+		r.Delete("/tasks/{id}", deletetask.New(storage))
+		
+		r.Get("/tasks/{id}", taskbyid.ById(storage))
+		r.Get("/tasks", tasks.All(storage))
+		
+		
 		
 		// TODO: add DELETE /url/{id}
 	})

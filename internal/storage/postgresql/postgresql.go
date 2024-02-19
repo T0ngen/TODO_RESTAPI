@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	
 
 	_ "github.com/lib/pq"
 )
@@ -142,6 +143,22 @@ func (s *Storage) CheckTaskById(username string, id string) (*TaskById, error) {
     return &task, nil
 }
 
+
+func (s *Storage) DeleteTaskById(username string, id string) (bool, error){
+	const op = "storage.postgresql.DeleteTaskById"
+
+	query := `DELETE FROM notes WHERE username=$1 and id=$2`
+	stmt, err := s.db.Exec(query, username, id)
+	if err != nil{
+		return false, fmt.Errorf("Error %v", op)
+	}
+	rowAffected, _ := stmt.RowsAffected()
+	if rowAffected == 0{
+		return false, fmt.Errorf("no rows to delete")
+	}
+
+	return true, nil
+}
 
 
 func (s *Storage) CheckUserInDb(username string, password string) (bool, error) {

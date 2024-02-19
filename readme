@@ -1,1 +1,6 @@
-create virtual env  export CONFIG_PATH=<путь до config.yaml/json
+create virtual env  export CONFIG_PATH=./config/config.yaml/json
+
+
+GET /notes  all notes
+GET /notes/id   notes by id
+DELETE /notes/id delete note by id
