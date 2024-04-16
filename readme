@@ -1,4 +1,4 @@
-create virtual env  export CONFIG_PATH=./config/config.yaml/json
+create virtual env  export CONFIG_PATH=./config/local.yaml
 
 
 GET /notes         all notes

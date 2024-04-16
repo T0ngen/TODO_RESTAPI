@@ -3,45 +3,55 @@ package taskbyid
 import (
 	resp "TodoRESTAPI/internal/lib/response"
 	"TodoRESTAPI/internal/storage/postgresql"
+	
+	"fmt"
+
 	"encoding/json"
 
 	"log"
 
 	"net/http"
 
-	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 )
 
-
-type TaskByIdInterface interface{
-	CheckTaskById(username string, id string)(*postgresql.TaskById, error)
+//go:generate go run github.com/vektra/mockery/v2@v2.42.2 --name=TaskByIdInterface
+type TaskByIdInterface interface {
+	CheckTaskById(username string, id string) (*postgresql.TaskById, error)
 }
 
 
-
-func ById(taskbyidinter TaskByIdInterface)http.HandlerFunc{
+func ById(taskbyidinter TaskByIdInterface) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.taskbyid.taskbyid.ByID"
-		if r.Method == http.MethodGet{
-			id := chi.URLParam(r, "id")
-			if id == ""{
-				log.Printf("id is empty") 
-				render.JSON(w,r, resp.Error("invalid request"))
+		if r.Method == http.MethodGet {
+			
+
+			idS := r.URL.Query().Get("id")
+			fmt.Println("id",idS)
+			if idS == "" {
+				fmt.Println("empty id")
+				w.WriteHeader(http.StatusBadRequest)
+				render.JSON(w, r, resp.Error("empty id"))
 				return
 			}
 			username, _, _ := r.BasicAuth()
-			result, err :=taskbyidinter.CheckTaskById(username, id)
-			if err != nil{
-				log.Printf("Error: %v : %s", err, op) 
+			// idS = strconv.Itoa(id)
+			result, err := taskbyidinter.CheckTaskById(username, idS)
+			if err != nil {
+				log.Printf("Error: %v : %s", err, op)
+				w.WriteHeader(http.StatusBadRequest)
+				
+				return
 			}
-			
-			if result == nil{
-				render.JSON(w,r, resp.Error("invalid request"))
+
+			if result == nil {
+				w.WriteHeader(http.StatusBadRequest)
+				render.JSON(w, r, resp.Error("invalid request"))
 				return
 			}
 			jsonData, err := json.Marshal(result)
-			if err != nil{
+			if err != nil {
 				log.Println("cant marshal json", op)
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
@@ -50,7 +60,6 @@ func ById(taskbyidinter TaskByIdInterface)http.HandlerFunc{
 			w.WriteHeader(http.StatusOK)
 			w.Write(jsonData)
 		}
-		
 
 	}
 }

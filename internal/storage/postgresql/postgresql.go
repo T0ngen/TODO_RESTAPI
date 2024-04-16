@@ -31,6 +31,8 @@ type Task struct {
 	Importance int `json:"importance"`
 }
 
+
+
 type TaskById struct{
 	Note string `json:"note"`
 	Importance int `json:"importance"`
@@ -91,13 +93,8 @@ func (s *Storage) CheckAllUserTasks(username string) ([]Task, error) {
 	const op = "storage.postgresql.CheckAllUserTasks"
    
 	query := `SELECT id, note, importance FROM notes WHERE username=$1`
-	stmt, err := s.db.Prepare(query)
-	if err != nil {
-	 return nil, fmt.Errorf("%s: %w", op, err)
-	}
-	defer stmt.Close()
-   
-	rows, err := stmt.Query(username)
+	
+	rows, err := s.db.Query(query,username)
 	if err != nil {
 	 return nil, fmt.Errorf("%s: %w", op, err)
 	}

@@ -3,17 +3,23 @@ package tasks
 import (
 	"TodoRESTAPI/internal/storage/postgresql"
 	"encoding/json"
-	
+
 	"log"
 	"net/http"
+
+	
 )
 
 
 
 
+
+//go:generate go run github.com/vektra/mockery/v2@v2.28.2 --name=AllTasksk
 type AllTasksk interface{
 	CheckAllUserTasks(username string) ([]postgresql.Task, error)
 }
+
+
 
 
 func All(allTasks AllTasksk)http.HandlerFunc {
